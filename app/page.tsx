@@ -1,102 +1,143 @@
-import Image from "next/image";
+"use client";
+
+import React, { useState } from 'react';
+import { Camera } from './components/Camera';
+import { FoodAnalysis, NutritionData } from './components/FoodAnalysis';
+import { ManualEntry } from './components/ManualEntry';
+import { ErrorMessage } from './components/ErrorMessage';
+import { analyzeFoodImage } from './utils/foodAnalysisApi';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+  const [nutritionData, setNutritionData] = useState<NutritionData | null>(null);
+  const [showManualEntry, setShowManualEntry] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleImageCapture = async (imageSrc: string) => {
+    setCapturedImage(imageSrc);
+    setIsAnalyzing(true);
+    setErrorMessage(null);
+    
+    try {
+      const result = await analyzeFoodImage(imageSrc);
+      setNutritionData(result);
+    } catch (error) {
+      console.error('Error analyzing food image:', error);
+      setErrorMessage('Failed to analyze the food image. Please try again or enter details manually.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleReset = () => {
+    setCapturedImage(null);
+    setNutritionData(null);
+    setShowManualEntry(false);
+    setErrorMessage(null);
+  };
+
+  const handleManualEntry = () => {
+    setShowManualEntry(true);
+    setErrorMessage(null);
+  };
+
+  const handleManualSave = (data: NutritionData) => {
+    setNutritionData(data);
+    setShowManualEntry(false);
+    setErrorMessage(null);
+  };
+
+  const handleManualCancel = () => {
+    setShowManualEntry(false);
+  };
+
+  const handleRetry = () => {
+    setIsAnalyzing(true);
+    setErrorMessage(null);
+    
+    // Simulate retrying the analysis
+    setTimeout(async () => {
+      try {
+        if (capturedImage) {
+          const result = await analyzeFoodImage(capturedImage);
+          setNutritionData(result);
+        }
+      } catch (error) {
+        setErrorMessage('Failed to analyze the food image. Please try again or enter details manually.');
+      } finally {
+        setIsAnalyzing(false);
+      }
+    }, 1000);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+            <span className="text-green-600 mr-2">Cal</span>
+            <span className="bg-black text-white px-2 rounded-md">AI</span>
+            <span className="text-sm font-normal ml-3 text-gray-500">Web Version</span>
+          </h1>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto">
+          {!capturedImage ? (
+            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+              <div className="text-center mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Track calories with just a picture</h2>
+                <p className="text-gray-600">
+                  Take a photo of your food and our AI will instantly calculate calories and nutrients
+                </p>
+              </div>
+              <Camera onCapture={handleImageCapture} />
+            </div>
+          ) : showManualEntry ? (
+            <ManualEntry onSave={handleManualSave} onCancel={handleManualCancel} />
+          ) : (
+            <>
+              {errorMessage && <ErrorMessage message={errorMessage} onRetry={handleRetry} />}
+              <FoodAnalysis
+                imageSrc={capturedImage}
+                nutritionData={nutritionData}
+                isLoading={isAnalyzing}
+                onReset={handleReset}
+                onManualEntry={handleManualEntry}
+              />
+            </>
+          )}
+          
+          {!showManualEntry && (
+            <div className="mt-12 bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-xl font-bold mb-4">How Cal AI Works</h2>
+              <ol className="list-decimal pl-5 space-y-3">
+                <li className="text-gray-700">
+                  <span className="font-medium">Image Capture:</span> Take a photo of your meal
+                </li>
+                <li className="text-gray-700">
+                  <span className="font-medium">Volume Estimation:</span> AI figures out the volume of your food
+                </li>
+                <li className="text-gray-700">
+                  <span className="font-medium">Food Identification:</span> AI identifies the different foods in your meal
+                </li>
+                <li className="text-gray-700">
+                  <span className="font-medium">Nutritional Analysis:</span> Calculate calories, protein, carbs and fat
+                </li>
+              </ol>
+            </div>
+          )}
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      <footer className="bg-white mt-12 py-8 border-t border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-center text-gray-500 text-sm">
+            Cal AI Web Demo - Track your calories with just a picture.
+          </p>
+        </div>
       </footer>
     </div>
   );
