@@ -22,8 +22,9 @@ export default function Home() {
     try {
       const result = await analyzeFoodImage(imageSrc);
       setNutritionData(result);
-    } catch (_) {
-      console.error('Error analyzing food image:', _);
+    } catch (error) {
+      // Error is logged but not otherwise used
+      console.error('Error analyzing food image:', error);
       setErrorMessage('Failed to analyze the food image. Please try again or enter details manually.');
     } finally {
       setIsAnalyzing(false);
@@ -63,7 +64,8 @@ export default function Home() {
           const result = await analyzeFoodImage(capturedImage);
           setNutritionData(result);
         }
-      } catch (_) {
+      } catch (error) {
+        // Error is not used in this scope
         setErrorMessage('Failed to analyze the food image. Please try again or enter details manually.');
       } finally {
         setIsAnalyzing(false);
