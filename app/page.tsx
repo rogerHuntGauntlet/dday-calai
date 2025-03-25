@@ -64,8 +64,7 @@ export default function Home() {
           const result = await analyzeFoodImage(capturedImage);
           setNutritionData(result);
         }
-      } catch (error) {
-        // Error is not used in this scope
+      } catch {
         setErrorMessage('Failed to analyze the food image. Please try again or enter details manually.');
       } finally {
         setIsAnalyzing(false);
