@@ -5,40 +5,52 @@ interface ErrorMessageProps {
   onRetry?: () => void;
 }
 
-export const ErrorMessage: React.FC<ErrorMessageProps> = ({ message, onRetry }) => {
+export const ErrorMessage: React.FC<ErrorMessageProps> = ({ 
+  message,
+  onRetry
+}) => {
   return (
-    <div className="bg-red-50 p-4 rounded-lg border border-red-200 mb-4">
-      <div className="flex items-start">
-        <div className="flex-shrink-0">
+    <div className="bg-white rounded-2xl shadow-md p-5 mb-4">
+      <div className="flex flex-col items-center py-4">
+        <div className="rounded-full bg-red-100 p-3 mb-3">
           <svg 
-            className="h-5 w-5 text-red-500" 
             xmlns="http://www.w3.org/2000/svg" 
-            viewBox="0 0 20 20" 
-            fill="currentColor"
+            className="h-8 w-8 text-red-500" 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            stroke="currentColor"
           >
             <path 
-              fillRule="evenodd" 
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" 
-              clipRule="evenodd" 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" 
             />
           </svg>
         </div>
-        <div className="ml-3">
-          <h3 className="text-sm font-medium text-red-800">Error</h3>
-          <div className="mt-1 text-sm text-red-700">
-            <p>{message}</p>
-          </div>
+        
+        <h3 className="text-lg font-bold text-red-600 mb-2">Something went wrong</h3>
+        
+        <p className="text-center text-gray-600 mb-4">
+          {message}
+        </p>
+        
+        <div className="flex space-x-3 w-full">
           {onRetry && (
-            <div className="mt-3">
-              <button
-                type="button"
-                onClick={onRetry}
-                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                Try Again
-              </button>
-            </div>
+            <button
+              onClick={onRetry}
+              className="flex-1 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium"
+            >
+              Try Again
+            </button>
           )}
+          
+          <button
+            onClick={() => window.location.reload()}
+            className="flex-1 py-3 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+          >
+            Refresh App
+          </button>
         </div>
       </div>
     </div>

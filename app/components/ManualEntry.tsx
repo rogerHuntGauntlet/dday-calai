@@ -96,119 +96,150 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({ onSave, onCancel }) =>
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-xl font-bold mb-4 text-center">Manual Food Entry</h2>
+    <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+      {/* Header */}
+      <div className="bg-green-600 text-white px-4 py-3 flex justify-between items-center">
+        <button 
+          onClick={onCancel}
+          className="p-2 -ml-2"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" />
+          </svg>
+        </button>
+        <h2 className="text-lg font-bold">Manual Food Entry</h2>
+        <div className="w-5"></div> {/* Spacer for centering */}
+      </div>
       
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {foodItems.map((item, index) => (
-          <div key={index} className="bg-gray-50 p-4 rounded-lg">
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="font-medium">Food Item {index + 1}</h3>
-              {foodItems.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => handleRemoveFoodItem(index)}
-                  className="text-sm text-red-600 hover:text-red-800"
-                >
-                  Remove
-                </button>
-              )}
+      <form onSubmit={handleSubmit} className="p-4">
+        <div className="space-y-4 mb-4">
+          {foodItems.map((item, index) => (
+            <div key={index} className="bg-gray-50 p-4 rounded-xl">
+              <div className="flex justify-between items-center mb-3">
+                <div className="flex items-center">
+                  <div className="w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm font-bold mr-2">
+                    {index + 1}
+                  </div>
+                  <h3 className="font-medium">Food Item</h3>
+                </div>
+                {foodItems.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveFoodItem(index)}
+                    className="text-sm text-red-600 bg-red-50 px-2 py-1 rounded-full"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1">Food Name</label>
+                  <input
+                    type="text"
+                    value={item.name}
+                    onChange={(e) => handleFoodItemChange(index, 'name', e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="E.g., Grilled Chicken Breast"
+                    required
+                  />
+                </div>
+                
+                <div className="flex space-x-3">
+                  <div className="flex-1">
+                    <label className="block text-gray-700 text-sm font-medium mb-1">Calories</label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        value={item.calories}
+                        onChange={(e) => handleFoodItemChange(index, 'calories', e.target.value)}
+                        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="0"
+                        min="0"
+                      />
+                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">kcal</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1">
+                    <label className="block text-gray-700 text-sm font-medium mb-1">Portion</label>
+                    <input
+                      type="text"
+                      value={item.portion}
+                      onChange={(e) => handleFoodItemChange(index, 'portion', e.target.value)}
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      placeholder="100g"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-gray-700 text-sm font-medium mb-1">Protein</label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        value={item.protein}
+                        onChange={(e) => handleFoodItemChange(index, 'protein', e.target.value)}
+                        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="0"
+                        min="0"
+                      />
+                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">g</span>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-gray-700 text-sm font-medium mb-1">Carbs</label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        value={item.carbs}
+                        onChange={(e) => handleFoodItemChange(index, 'carbs', e.target.value)}
+                        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="0"
+                        min="0"
+                      />
+                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">g</span>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-gray-700 text-sm font-medium mb-1">Fat</label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        value={item.fat}
+                        onChange={(e) => handleFoodItemChange(index, 'fat', e.target.value)}
+                        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="0"
+                        min="0"
+                      />
+                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">g</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">
-                <label className="block text-gray-700 text-sm font-medium mb-1">Food Name</label>
-                <input
-                  type="text"
-                  value={item.name}
-                  onChange={(e) => handleFoodItemChange(index, 'name', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="E.g., Grilled Chicken Breast"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="block text-gray-700 text-sm font-medium mb-1">Calories</label>
-                <input
-                  type="number"
-                  value={item.calories}
-                  onChange={(e) => handleFoodItemChange(index, 'calories', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Calories (kcal)"
-                  min="0"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-gray-700 text-sm font-medium mb-1">Portion</label>
-                <input
-                  type="text"
-                  value={item.portion}
-                  onChange={(e) => handleFoodItemChange(index, 'portion', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="E.g., 1 cup, 100g"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-gray-700 text-sm font-medium mb-1">Protein (g)</label>
-                <input
-                  type="number"
-                  value={item.protein}
-                  onChange={(e) => handleFoodItemChange(index, 'protein', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Protein (g)"
-                  min="0"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-gray-700 text-sm font-medium mb-1">Carbs (g)</label>
-                <input
-                  type="number"
-                  value={item.carbs}
-                  onChange={(e) => handleFoodItemChange(index, 'carbs', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Carbs (g)"
-                  min="0"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-gray-700 text-sm font-medium mb-1">Fat (g)</label>
-                <input
-                  type="number"
-                  value={item.fat}
-                  onChange={(e) => handleFoodItemChange(index, 'fat', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Fat (g)"
-                  min="0"
-                />
-              </div>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
         
         <button
           type="button"
           onClick={handleAddFoodItem}
-          className="w-full py-2 border border-dashed border-blue-500 text-blue-600 rounded-md hover:bg-blue-50 transition-colors"
+          className="w-full py-3 border border-dashed border-green-500 text-green-600 rounded-xl hover:bg-green-50 transition-colors mb-4 flex items-center justify-center"
         >
-          + Add another food item
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+          </svg>
+          Add another food item
         </button>
         
-        <div className="flex justify-end space-x-3 pt-4">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-          >
-            Cancel
-          </button>
+        <div className="sticky bottom-0 pt-2">
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="w-full py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 font-medium"
           >
             Save Entry
           </button>
