@@ -10,55 +10,92 @@ const openai = new OpenAI({
   apiKey: OPENAI_API_KEY,
 });
 
-// Define interface for the API response item
-interface ApiResponseItem {
+// Define interfaces for OpenAI API responses
+interface OpenAIErrorResponse {
+  status?: number;
+  statusText?: string;
+  data?: unknown;
+}
+
+interface OpenAIFoodItem {
   name: string;
-  nutritionalInfo?: {
-    calories?: number;
-    protein?: number;
-    carbohydrates?: number;
-    fat?: number;
-  };
-  portion?: string;
+  portion: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
+interface OpenAIResponse {
+  foodItems: OpenAIFoodItem[];
 }
 
 export async function POST(request: NextRequest) {
+  // Add CORS headers
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  };
+
+  // Handle OPTIONS request (preflight)
+  if (request.method === 'OPTIONS') {
+    return new NextResponse(null, {
+      status: 200,
+      headers: corsHeaders,
+    });
+  }
+
   try {
     const { image } = await request.json();
     
     if (!image) {
       return NextResponse.json(
         { error: 'Image data is required' },
-        { status: 400 }
+        { 
+          status: 400,
+          headers: corsHeaders
+        }
       );
     }
     
     // If OpenAI API key is not available, return mock data for development
     if (!OPENAI_API_KEY) {
       console.warn('OpenAI API key not found, returning mock data');
-      return NextResponse.json(generateMockResponse(), { status: 200 });
+      return NextResponse.json(generateMockResponse(), { 
+        status: 200,
+        headers: corsHeaders 
+      });
     }
     
     // Call OpenAI's Vision API to analyze the food image
     try {
       const result = await analyzeWithOpenAI(image);
-      return NextResponse.json(result, { status: 200 });
-    } catch (error: any) {
+      return NextResponse.json(result, { 
+        status: 200,
+        headers: corsHeaders
+      });
+    } catch (error: unknown) {
       console.error('OpenAI API error:', error);
       
       // Extract more detailed error information if available
       let errorDetails = String(error);
-      if (error.response) {
+      const typedError = error as { response?: OpenAIErrorResponse };
+      
+      if (typedError.response) {
         errorDetails = JSON.stringify({
-          status: error.response.status,
-          statusText: error.response.statusText,
-          data: error.response.data
+          status: typedError.response.status,
+          statusText: typedError.response.statusText,
+          data: typedError.response.data
         });
       }
       
       return NextResponse.json(
         { error: 'Failed to analyze food image', details: errorDetails },
-        { status: 500 }
+        { 
+          status: 500,
+          headers: corsHeaders
+        }
       );
     }
   } catch (error) {
@@ -66,7 +103,10 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json(
       { error: 'Internal server error', details: String(error) },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: corsHeaders 
+      }
     );
   }
 }
@@ -76,7 +116,7 @@ export async function POST(request: NextRequest) {
  * @param imageBase64 Base64 encoded image
  * @returns Structured nutrition data
  */
-async function analyzeWithOpenAI(imageBase64: string): Promise<any> {
+async function analyzeWithOpenAI(imageBase64: string) {
   // Create system prompt that instructs GPT-4 to analyze the food
   const systemPrompt = `
     You are a nutrition expert that analyzes food images. 
@@ -149,7 +189,7 @@ async function analyzeWithOpenAI(imageBase64: string): Promise<any> {
     
     console.log("OpenAI response received:", content.substring(0, 100) + "...");
     
-    const parsedResponse = JSON.parse(content);
+    const parsedResponse = JSON.parse(content) as OpenAIResponse;
     
     // Check if the response has the expected structure
     if (!parsedResponse.foodItems || !Array.isArray(parsedResponse.foodItems)) {
@@ -158,7 +198,7 @@ async function analyzeWithOpenAI(imageBase64: string): Promise<any> {
     }
     
     // Extract food items from the response
-    const foodDetails: FoodItem[] = parsedResponse.foodItems.map((item: any) => ({
+    const foodDetails: FoodItem[] = parsedResponse.foodItems.map((item: OpenAIFoodItem) => ({
       name: item.name,
       calories: Math.round(item.calories) || 0,
       protein: Math.round(item.protein) || 0,
@@ -185,12 +225,13 @@ async function analyzeWithOpenAI(imageBase64: string): Promise<any> {
       foods: foodDetails.map(item => item.name),
       foodDetails: foodDetails,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("OpenAI API call failed:", error);
-    if (error.response) {
-      console.error("OpenAI API error details:", error.response.data);
+    const typedError = error as { response?: { data?: unknown } };
+    if (typedError.response) {
+      console.error("OpenAI API error details:", typedError.response.data);
     }
-    throw new Error(`OpenAI API error: ${error.message}`);
+    throw new Error(`OpenAI API error: ${String(error)}`);
   }
 }
 
